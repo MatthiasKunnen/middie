@@ -131,6 +131,35 @@ test('Should support per path middlewares', t => {
   })
 })
 
+test('Non-wildcard path middleware should not be called for subroutes', t => {
+  t.plan(3)
+  const fastify = Fastify()
+  t.teardown(fastify.close)
+
+  fastify
+    .register(middiePlugin)
+    .after(() => {
+      fastify.use('/', middleware)
+    })
+
+  fastify.listen(0, (err, address) => {
+    t.error(err)
+
+    sget({
+      method: 'GET',
+      url: address + '/hello'
+    }, (err, res, data) => {
+      t.error(err)
+      t.pass()
+    })
+  })
+
+  function middleware (req, res, next) {
+    t.fail('Should not be called')
+    next()
+  }
+})
+
 test('Encapsulation support / 1', t => {
   t.plan(2)
 
